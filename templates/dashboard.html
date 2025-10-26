@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SpendSmart</title>
+</head>
+<body>
+    <h1> Welcome, {{ name }}</h1>
+    <p><a href="{{ url_for('logout') }}">Logout</a></p>
+
+    <h2>Add New Expense</h2>
+    <form method="POST">
+        <label>Date:</label>
+        <input type="date" name="date" required><br>
+
+        <label>Description:</label>
+        <input type="text" name="description"><br>
+
+        <label>Amount:</label>
+        <input type="number" name="amount" step="0.01" required><br>
+
+        <label>Category:</label>
+        <input type="text"name="category"><br>
+
+        <button type="submit">Add Expense</button>
+    </form>
+
+    <h2>Your Expenses</h2>
+    <table border="1">
+        <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Amount</th>
+            <th>Category</th>
+        </tr>
+        {% for exp in expenses %}
+        <tr>
+            <td>{{ exp['date'] }}</td>
+            <td>{{ exp['description'] }}</td>
+            <td>{{ exp['amount'] }}</td>
+            <td>{{ exp['category'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

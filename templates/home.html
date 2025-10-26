@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpendSmart - Home</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+        /* === Design Variables === */
+        :root {
+            --color-navbar: #437498; 
+            --color-hero-start: #78bdee; 
+            --color-hero-end: #ffe4e1;   
+            --color-success-green: #3cb863; /* Buttons */
+            --color-white: #ffffff;
+            --color-dark-text: #2a3a50;
+            --color-body-bg: #f0f3f8;
+        }
+
+        /* === General Body Styles === */
+        body {
+            background-color: var(--color-body-bg);
+        }
+
+        /* === Navbar Styles === */
+        .navbar-custom {
+            background-color: var(--color-navbar);
+            padding: 15px 0;
+        }
+
+        .logo-wrapper {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--color-white);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .logo-icon {
+            background-color: var(--color-white);
+            color: var(--color-navbar);
+            padding: 2px 5px;
+            border-radius: 5px;
+            font-weight: 900;
+        }
+
+        .navbar-custom .nav-link {
+            color: var(--color-white);
+            opacity: 0.9;
+            margin-right: 1.5rem;
+            font-weight: 500;
+        }
+
+        .navbar-custom .nav-link:hover {
+            opacity: 1;
+        }
+
+        .navbar-actions a {
+            margin-left: 10px;
+        }
+
+        /* Navbar Buttons */
+        .btn-sign-up {
+            background-color: var(--color-success-green);
+            border-color: var(--color-success-green);
+            color: var(--color-white);
+            font-weight: 600;
+        }
+
+        .btn-log-in {
+            background-color: transparent;
+            border: 1px solid var(--color-white);
+            color: var(--color-white);
+            font-weight: 600;
+        }
+
+        /* === Hero Section === */
+        .hero {
+            background: linear-gradient(135deg, var(--color-hero-start), var(--color-hero-end));
+            color: var(--color-dark-text);
+            min-height: 500px;
+            padding: 80px 0;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .hero {
+    background: linear-gradient(135deg, var(--color-hero-start), var(--color-hero-end));
+    color: var(--color-dark-text);
+    min-height: 500px;
+    padding: 80px 0;
+    border-radius: 10px;
+    margin: 20px 0;
+}
+        .hero-container-wrapper {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .hero-text h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 15px;
+        }
+
+        .hero-text p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        /* Hero Buttons */
+        .btn-success-custom {
+            background-color: var(--color-success-green);
+            border-color: var(--color-success-green);
+            color: var(--color-white);
+            padding: 10px 25px;
+            font-weight: 600;
+        }
+
+        .btn-success-custom:hover {
+            background-color: #35a458;
+            border-color: #35a458;
+        }
+
+        .btn-outline-custom {
+            background-color: transparent;
+            border: 2px solid var(--color-success-green);
+            color: var(--color-dark-text);
+            padding: 10px 25px;
+            font-weight: 600;
+        }
+
+        .btn-outline-custom:hover {
+            background-color: var(--color-success-green);
+            color: var(--color-white);
+        }
+
+        /* Phone Mockup */
+        .phone-col {
+            justify-content: flex-end;
+        }
+
+        .phone-mockup {
+            width: 300px;
+            height: 600px;
+            background-color: #333;
+            border-radius: 40px;
+            padding: 15px;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.4);
+            transform: perspective(1000px) rotateX(5deg) rotateY(-5deg) rotateZ(5deg);
+            position: relative;
+        }
+
+        .phone-screen {
+            background-color: var(--color-white);
+            border-radius: 25px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .circle-chart-mock {
+            width: 150px;
+            height: 150px;
+            border: 12px solid var(--color-success-green);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--color-success-green);
+        }
+
+        .chart-amount {
+            font-size: 1.8rem;
+            line-height: 1;
+        }
+
+        .chart-status {
+            font-size: 0.75rem;
+            color: #888;
+        }
+
+        .chart-line-mock {
+            width: 100%;
+            height: 80px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            margin-top: 30px;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .hero {
+                margin: 0;
+                border-radius: 0;
+            }
+            .phone-col {
+                justify-content: center !important;
+            }
+            .phone-mockup {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="logo-wrapper" href="#">
+                <span class="logo-icon">S</span> SpendSmart
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Add expense</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Goals</a></li>
+
+                </ul>
+                <div class="navbar-actions">
+                    <a href="#" class="btn btn-sm btn-sign-up">Sign Up</a>
+                    <a href="#" class="btn btn-sm btn-log-in">Log In</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="container hero-container-wrapper">
+            <div class="row align-items-center">
+                <!-- Hero Text -->
+                <div class="col-lg-6 hero-text">
+                    <h1>FINANCIAL<br>PEACE OF MIND</h1>
+                    <p>Track, budget, and grow your money effortlessly.</p>
+                    <div class="d-flex justify-content-lg-start justify-content-center gap-3">
+                        <a href="#" class="btn btn-success-custom">Start Saving Today</a>
+                        <a href="#" class="btn btn-outline-custom">Learn More</a>
+                    </div>
+                </div>
+
+                <!-- Phone Mockup -->
+                <div class="col-lg-6 d-none d-lg-flex phone-col">
+                    <div class="phone-mockup">
+                        <div class="phone-screen">
+                            <div class="circle-chart-mock">
+                                <span class="chart-amount">$12,340</span>
+                                <span class="chart-status">80% / 15,425</span>
+                            </div>
+                            <div class="chart-line-mwock"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </header>
+        <!-- How It Works Section -->
+    <section class="how-it-works py-5" style="background-color: #f9fcff;">
+        <div class="container text-center">
+            <!-- Section Heading -->
+            <h2 class="fw-bold mb-4" style="color:#2a3a50;">How SpendSmart Works</h2>
+            <p class="text-muted mb-5">A simple and smart way to manage your money better.</p>
+
+            <div class="row g-4">
+                <!-- Step 1 -->
+                <div class="col-md-3 col-6">
+                    <div class="p-4 border-0 bg-white rounded shadow-sm h-100 animate__animated animate__fadeInUp">
+                        <i class="bi bi-person-plus fs-1 text-success mb-3"></i>
+                        <h5 class="fw-semibold">Sign Up</h5>
+                        <p class="small text-muted">Create your account in seconds and get started.</p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="col-md-3 col-6">
+                    <div class="p-4 border-0 bg-white rounded shadow-sm h-100 animate__animated animate__fadeInUp animate__delay-1s">
+                        <i class="bi bi-pencil-square fs-1 text-success mb-3"></i>
+                        <h5 class="fw-semibold">Add Expenses</h5>
+                        <p class="small text-muted">Record your daily expenses with a few clicks.</p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="col-md-3 col-6">
+                    <div class="p-4 border-0 bg-white rounded shadow-sm h-100 animate__animated animate__fadeInUp animate__delay-2s">
+                        <i class="bi bi-graph-up-arrow fs-1 text-success mb-3"></i>
+                        <h5 class="fw-semibold">Track Insights</h5>
+                        <p class="small text-muted">Visualize where your money goes instantly.</p>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="col-md-3 col-6">
+                    <div class="p-4 border-0 bg-white rounded shadow-sm h-100 animate__animated animate__fadeInUp animate__delay-3s">
+                        <i class="bi bi-piggy-bank fs-1 text-success mb-3"></i>
+                        <h5 class="fw-semibold">Stay on Budget</h5>
+                        <p class="small text-muted">Set smart limits and save more every month.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About SpendSmart Section -->
+<section class="about-spendsmart py-5" style="background-color: #f9fcff;">
+    <div class="container">
+        <!-- Section Heading -->
+        <div class="text-center mb-5">
+            <h2 class="fw-bold" style="color: var(--color-dark-text);">Smart Features Powered by AI & ML</h2>
+            <p class="text-muted">SpendSmart uses intelligent algorithms to help you manage money smarter.</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Feature 1 -->
+            <div class="col-md-6 col-lg-3">
+                <div class="p-4 bg-white rounded shadow-sm h-100 text-center animate__animated animate__fadeInUp">
+                    <div class="mb-3" style="font-size: 2rem; color: #78bdee;">🧠</div>
+                    <h5 class="fw-semibold">Smart Expense Categorization</h5>
+                    <p class="small text-muted">Automatically detects where your money goes.</p>
+                </div>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="col-md-6 col-lg-3">
+                <div class="p-4 bg-white rounded shadow-sm h-100 text-center animate__animated animate__fadeInUp animate__delay-1s">
+                    <div class="mb-3" style="font-size: 2rem; color: #3cb863;">📊</div>
+                    <h5 class="fw-semibold">Spending Pattern Analysis</h5>
+                    <p class="small text-muted">Tracks and visualizes your spending habits.</p>
+                </div>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="col-md-6 col-lg-3">
+                <div class="p-4 bg-white rounded shadow-sm h-100 text-center animate__animated animate__fadeInUp animate__delay-2s">
+                    <div class="mb-3" style="font-size: 2rem; color: #ffe4e1;">🎯</div>
+                    <h5 class="fw-semibold">Personalized Budget Suggestions</h5>
+                    <p class="small text-muted">Helps you stay on track with your goals.</p>
+                </div>
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="col-md-6 col-lg-3">
+                <div class="p-4 bg-white rounded shadow-sm h-100 text-center animate__animated animate__fadeInUp animate__delay-3s">
+                    <div class="mb-3" style="font-size: 2rem; color: #78bdee;">💬</div>
+                    <h5 class="fw-semibold">Future Expense Prediction</h5>
+                    <p class="small text-muted">Uses ML to forecast future expenses.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Call-to-Action (CTA) Section -->
+<section class="cta-section py-5 animate__animated animate__fadeInUp" 
+         style="background: linear-gradient(90deg, var(--color-hero-start), var(--color-hero-end));">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-3" style="color: var(--color-dark-text);">
+            Take Control of Your Finances Today!
+        </h2>
+        <p class="mb-4 text-dark-50">
+            Start tracking your expenses, get smart insights, and reach your goals faster.
+        </p>
+        <a href="/signup" class="btn btn-lg" 
+           style="background-color: var(--color-success-green); color: var(--color-white);">
+            Get Started
+        </a>
+    </div>
+</section>
+<!-- Footer Section -->
+<footer class="py-4" style="background-color: #f0f3f8;">
+    <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
+        <div class="text-center text-md-start">
+            <p class="mb-1 text-muted" style="font-size: 0.9rem;">© 2025 SpendSmart. All rights reserved.</p>
+            <p class="mb-0 text-muted" style="font-size: 0.85rem; font-style: italic;">
+                Helping you spend smarter, one day at a time.
+            </p>
+        </div>
+        
+        <!-- Right side links -->
+        <ul class="list-unstyled d-flex mb-0">
+            <li class="ms-3"><a class="text-muted text-decoration-none" href="#">Privacy Policy</a></li>
+            <li class="ms-3"><a class="text-muted text-decoration-none" href="#">Terms</a></li>
+            <li class="ms-3"><a class="text-muted text-decoration-none" href="#">Contact</a></li>
+        </ul>
+    </div>
+</footer>
+
+
+
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

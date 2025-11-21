@@ -1,47 +1,409 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - SpendSmart</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SpendSmart Dashboard</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root{
+      --color-navbar:#ffe4e1; --color-navbar-text:#437498; --color-success-green:#3cb863; --color-white:#ffffff;
+    }
+    body { font-family: 'Segoe UI', sans-serif; background-color: #f0f3f8; padding-top: 80px; }
+
+    /* Navbar */
+    .navbar-custom { background-color:#ebdef6; padding:12px 25px; position:fixed; top:0; width:100%; z-index:1000; box-shadow:0 2px 10px rgba(0,0,0,0.1); }
+    .logo-wrapper{ font-size:1.4rem; font-weight:bold; color:var(--color-navbar-text); display:flex; align-items:center; gap:8px; }
+    .logo-icon{ background-color:var(--color-navbar-text); color:var(--color-white); padding:4px 8px; border-radius:50%; font-weight:900; font-size:1.2rem; }
+    .navbar-custom .nav-link{ color:var(--color-navbar-text); font-weight:500; margin-right:1.2rem; transition:all .3s; }
+    .navbar-custom .nav-link:hover{ color:var(--color-success-green); }
+    .btn-logout{ background-color:var(--color-success-green); color:var(--color-white); font-weight:600; border:none; border-radius:25px; padding:6px 18px; transition:all .3s ease; }
+    .btn-logout:hover{ background-color:#35a458; transform:scale(1.05); }
+
+    /* Hero */
+    .hero-section{ background: linear-gradient(135deg,#ffe4e1,#78bdee); color:#2f2f2f; padding:100px 20px; text-align:center; border-radius:0 0 60px 60px; }
+    .hero-logo{ font-size:4rem; font-weight:bold; color:var(--color-navbar-text); display:inline-flex; align-items:center; gap:10px; }
+    .hero-text{ font-size:1.1rem; color:#444; margin-top:15px; opacity:0; animation:fadeIn 3s forwards; }
+    @keyframes fadeIn { from{opacity:0; transform:translateY(20px)} to{opacity:1; transform:translateY(0)} }
+
+    /* Glass card */
+    .glass-card{ background: rgba(255,255,255,0.25); border-radius:20px; backdrop-filter: blur(12px); box-shadow:0 8px 32px rgba(67,116,152,0.25); border:1px solid rgba(255,255,255,0.3); transition:transform .4s ease, box-shadow .4s ease; }
+    .glass-card:hover{ transform: translateY(-5px); box-shadow:0 12px 40px rgba(67,116,152,0.3); }
+
+    /* Form */
+    .form-label{ color:#437498; font-weight:500; }
+    .form-control, .form-select{ border-radius:10px; border:1px solid #ccd8e1; transition:all .3s ease; }
+    .form-control:focus, .form-select:focus{ box-shadow:0 0 10px rgba(60,184,99,.3); border-color:#3cb863; }
+    .btn-add-expense{ background-color:#3cb863; color:white; font-weight:600; border:none; padding:10px 30px; border-radius:25px; transition:all .3s ease; }
+    .btn-add-expense:hover{ background-color:#35a458; transform:scale(1.05); }
+
+    /* Popup */
+    .popup-box{ display:none; position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); background:rgba(255,255,255,.3); backdrop-filter:blur(12px); border-radius:20px; box-shadow:0 10px 40px rgba(67,116,152,.3); padding:30px 50px; text-align:center; z-index:2000; animation:fadeInOut 2.5s ease; }
+    .popup-text{ font-size:1.1rem; font-weight:600; color:#437498; }
+    .progress-bar{ width:180px; height:6px; background:rgba(67,116,152,.1); border-radius:5px; overflow:hidden; }
+    .progress-fill{ width:0; height:100%; background:linear-gradient(90deg,#ffe4e1,#3cb863,#78bdee); border-radius:5px; animation:fillLine 2s linear forwards; }
+    @keyframes fillLine{ from{width:0} to{width:100%} }
+    @keyframes fadeInOut{ 0%{opacity:0;transform:translate(-50%,-60%)} 20%,80%{opacity:1;transform:translate(-50%,-50%)} 100%{opacity:0;transform:translate(-50%,-40%)} }
+
+    /* Table */
+    #expense-section{ display:none; padding:80px 0; }
+    .expense-table-card{ background: rgba(255,255,255,0.25); border-radius:20px; backdrop-filter:blur(12px); box-shadow:0 8px 32px rgba(67,116,152,.25); border:1px solid rgba(255,255,255,.3); padding:30px; transition:transform .4s ease, box-shadow .4s ease; }
+    .table th, .table td{ text-align:center; color:#437498; font-weight:500; }
+    .table thead{ background:linear-gradient(90deg,#ffe4e1,#78bdee); color:#437498; }
+
+    .action-btn{ border:none; border-radius:8px; padding:3px 10px; font-size:.8rem; color:white; cursor:pointer; transition:all .3s ease; }
+    .btn-edit{ background-color:#3cb863; }
+    .btn-delete{ background-color:#ff6b6b; }
+
+    /* summary */
+    #expense-summary{ display:none; padding:60px 0; }
+
+    /* analytics/charts */
+    .charts-section{ display:none; margin-top:40px; padding:25px; background:rgba(255,255,255,.15); backdrop-filter:blur(10px); border-radius:16px; }
+    .charts-container{ display:flex; gap:30px; flex-wrap:wrap; justify-content:space-between; }
+    .charts-container .chart-wrap{ width:48%; min-height:320px; background:#1e1e1e; border-radius:14px; padding:18px; box-sizing:border-box; }
+    .charts-container canvas{ width:100% !important; height:320px !important; display:block; }
+    @media(max-width:768px){ .charts-container .chart-wrap{ width:100%; } }
+
+  </style>
 </head>
 <body>
-    <h1> Welcome, {{ name }}</h1>
-    <p><a href="{{ url_for('logout') }}">Logout</a></p>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-custom">
+    <div class="container-fluid d-flex align-items-center">
+      <a class="navbar-brand logo-wrapper d-flex align-items-center" href="#"><span class="logo-icon">S</span><span style="margin-left:8px;">SpendSmart</span></a>
+      <div class="d-flex flex-grow-1 justify-content-center">
+        <ul class="navbar-nav d-flex flex-row align-items-center mb-0">
+          <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Reports</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Settings</a></li>
+        </ul>
+      </div>
+      <div class="d-flex align-items-center"><button class="btn btn-logout ms-3">Logout</button></div>
+    </div>
+  </nav>
 
-    <h2>Add New Expense</h2>
-    <form method="POST">
-        <label>Date:</label>
-        <input type="date" name="date" required><br>
+  <!-- Hero -->
+  <section class="hero-section">
+    <div class="container">
+      <div class="hero-logo"><span>S</span> SpendSmart</div>
+      <p class="hero-text">Track your expenses, visualize spending trends, and manage your budget smarter — all in one place.</p>
+    </div>
+  </section>
 
-        <label>Description:</label>
-        <input type="text" name="description"><br>
+  <!-- Add Expense -->
+  <section id="add-expense" class="py-5" style="background-color:#f9fcff;">
+    <div class="container">
+      <div class="text-center mb-5">
+        <h2 class="fw-bold" style="color:#437498;">Add Your Expense</h2>
+        <p style="color:#555;">Quickly log your spending with a few simple details</p>
+      </div>
 
-        <label>Amount:</label>
-        <input type="number" name="amount" step="0.01" required><br>
+      <div class="glass-card mx-auto p-4" style="max-width:600px;">
+        <form id="expenseForm">
+          <input type="hidden" id="expense_id" value="">
+          <div class="mb-3"><label for="date" class="form-label">Date</label><input type="date" id="date" class="form-control" required></div>
+          <div class="mb-3"><label for="description" class="form-label">Description</label><input type="text" id="description" class="form-control" placeholder="e.g., Grocery shopping" required></div>
+          <div class="mb-3"><label for="amount" class="form-label">Amount</label><input type="number" id="amount" class="form-control" placeholder="e.g., 1500" required></div>
+          <div class="mb-4"><label for="category" class="form-label">Category</label>
+            <select id="category" class="form-select" required>
+              <option value="">Select category</option>
+              <option value="Food">Food</option>
+              <option value="Travel">Travel</option>
+              <option value="Shopping">Shopping</option>
+              <option value="Bills">Bills</option>
+              <option value="Others">Others</option>
+            </select>
+          </div>
+          <div class="text-center"><button type="submit" class="btn-add-expense">Add Expense</button></div>
+        </form>
+      </div>
 
-        <label>Category:</label>
-        <input type="text"name="category"><br>
+      <div id="popup" class="popup-box">
+        <div class="popup-content">
+          <p class="popup-text">Analyzing your expense...</p>
+          <div class="progress-bar"><div class="progress-fill"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-        <button type="submit">Add Expense</button>
-    </form>
+  <!-- Your Expenses -->
+  <section id="expense-section">
+    <div class="container">
+      <div class="text-center mb-5">
+        <h2 class="fw-bold" style="color:#437498;">Your Expenses</h2>
+        <p style="color:#555;">Here’s a summary of your recent spending</p>
+      </div>
+      <div class="expense-table-card mx-auto" style="max-width:800px;">
+        <table class="table align-middle table-hover mb-0">
+          <thead><tr><th>Date</th><th>Description</th><th>Amount (₹)</th><th>Category</th><th>Actions</th></tr></thead>
+          <tbody id="expenseTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 
-    <h2>Your Expenses</h2>
-    <table border="1">
-        <tr>
-            <th>Date</th>
-            <th>Description</th>
-            <th>Amount</th>
-            <th>Category</th>
-        </tr>
-        {% for exp in expenses %}
-        <tr>
-            <td>{{ exp['date'] }}</td>
-            <td>{{ exp['description'] }}</td>
-            <td>{{ exp['amount'] }}</td>
-            <td>{{ exp['category'] }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+  <!-- Summary -->
+  <section id="expense-summary" style="display:none; padding:60px 0;">
+    <div class="container">
+      <div class="text-center mb-5">
+        <h2 class="fw-bold" style="color:#437498;">Expense Summary</h2>
+        <p style="color:#555;">A quick overview of your spending</p>
+      </div>
+      <div class="glass-card mx-auto p-4 text-center" style="max-width:700px;">
+        <div class="row">
+          <div class="col-md-4 mb-3 mb-md-0"><h5 style="color:#437498;">Total Expenses</h5><p id="totalExpense" class="fs-5 fw-bold text-success">₹0</p></div>
+          <div class="col-md-4 mb-3 mb-md-0"><h5 style="color:#437498;">Highest Category</h5><p id="highestCategory" class="fs-5 fw-bold text-primary">—</p></div>
+          <div class="col-md-4"><h5 style="color:#437498;">Total Transactions</h5><p id="totalTransactions" class="fs-5 fw-bold text-info">0</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+ <!-- Analytics (pie + bar) -->
+<section id="expense-analytics" class="charts-section" style="display:none; padding:60px 0;">
+  <div class="container text-center">
+    <h2 class="fw-bold" style="color:#437498;">Expense Analytics</h2>
+    <p style="color:#555;">Visual breakdown of your spending</p>
+
+    <div class="charts-container mt-4">
+      <div class="chart-wrap"><canvas id="pieChart"></canvas></div>
+      <div class="chart-wrap"><canvas id="barChart"></canvas></div>
+    </div>
+  </div>
+</section>
+
+{% if predicted_amount %}
+<section class="py-5">
+  <div class="container">
+    <div class="glass-card mx-auto p-4 text-center" style="
+      max-width:600px;
+      border-radius:16px;
+      background:rgba(255,255,255,0.75);
+      box-shadow:0 8px 25px rgba(0,0,0,0.08);
+      backdrop-filter:blur(12px);
+    ">
+      <h3 style="color:#437498; margin-bottom: 5px;">
+        Predicted next month's spending:
+      </h3>
+
+      <p style="font-size:24px; font-weight:600; color:#6c63ff;">
+        ₹{{ predicted_amount }}
+      </p>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+
+  <!-- Script: single unified logic -->
+  <script>
+  (function () {
+    const form = document.getElementById('expenseForm');
+    const popup = document.getElementById('popup');
+    const progressFill = popup.querySelector('.progress-fill');
+    const tableBody = document.getElementById('expenseTableBody');
+    const expenseSection = document.getElementById('expense-section');
+    const summarySection = document.getElementById('expense-summary');
+    const analyticsSection = document.getElementById('expense-analytics');
+
+    let pieChart = null;
+    let barChart = null;
+
+    // helper: restart progress bar animation
+    function restartProgress() {
+      progressFill.style.width = '0';
+      progressFill.style.animation = 'none';
+      void progressFill.offsetWidth;
+      progressFill.style.animation = 'fillLine 2s linear forwards';
+    }
+
+    // Add row to table
+    function addRow({id,date, desc, amt, cat}) {
+      const tr = document.createElement('tr');
+      tr.dataset.id = id;
+      tr.innerHTML = `
+        <td>${date}</td>
+        <td>${escapeHtml(desc)}</td>
+        <td>${parseFloat(amt)}</td>
+        <td>${escapeHtml(cat)}</td>
+        <td>
+          <button class="action-btn btn-edit">Edit</button>
+          <button class="action-btn btn-delete">Delete</button>
+        </td>
+      `;
+      tr.style.opacity = 0;
+
+      setTimeout(()=>{ tr.style.transition='opacity .6s ease'; tr.style.opacity=1; }, 50);
+      triggerAllUpdates();
+    }
+
+    // escape small text to avoid broken HTML
+    function escapeHtml(s){ return String(s).replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]); }); }
+
+    // update summary from table rows
+    function updateSummary() {
+      const rows = tableBody.querySelectorAll('tr');
+      let total = 0;
+      const categories = {};
+      rows.forEach(r=>{
+        const amount = parseFloat(r.children[2].textContent) || 0;
+        const cat = r.children[3].textContent || 'Others';
+        total += amount;
+        categories[cat] = (categories[cat] || 0) + amount;
+      });
+      const highestCat = Object.keys(categories).length ? Object.keys(categories).reduce((a,b)=> categories[a] > categories[b] ? a : b) : '—';
+      document.getElementById('totalExpense').textContent = '₹' + total;
+      document.getElementById('highestCategory').textContent = highestCat;
+      document.getElementById('totalTransactions').textContent = rows.length;
+      // show/hide summary
+      summarySection.style.display = rows.length ? 'block' : 'none';
+    }
+
+    // update charts from table rows
+    function updateCharts() {
+      const rows = tableBody.querySelectorAll('tr');
+      if (!rows || rows.length === 0) {
+        // destroy charts and hide
+        if (pieChart) { pieChart.destroy(); pieChart = null; }
+        if (barChart) { barChart.destroy(); barChart = null; }
+        analyticsSection.style.display = 'none';
+        return;
+      }
+
+      // build aggregates
+      const categoryTotals = {};
+      const dateTotals = {};
+      rows.forEach(r=>{
+        const date = (r.children[0].textContent || '').trim();
+        const amount = parseFloat(r.children[2].textContent) || 0;
+        const category = (r.children[3].textContent || 'Others').trim();
+        categoryTotals[category] = (categoryTotals[category] || 0) + amount;
+        dateTotals[date] = (dateTotals[date] || 0) + amount;
+      });
+
+      const pieLabels = Object.keys(categoryTotals);
+      const pieData = pieLabels.map(l => categoryTotals[l]);
+
+      const barLabels = Object.keys(dateTotals).sort((a,b)=> new Date(a) - new Date(b));
+      const barData = barLabels.map(d => dateTotals[d]);
+
+      // destroy old charts if present
+      if (pieChart) { pieChart.destroy(); pieChart = null; }
+      if (barChart) { barChart.destroy(); barChart = null; }
+
+      // show analytics section
+      analyticsSection.style.display = 'block';
+
+      // create charts with dark theme labels
+      const pieCtx = document.getElementById('pieChart').getContext('2d');
+      pieChart = new Chart(pieCtx, {
+        type:'pie',
+        data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor:['#5A6ACF','#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#8ecae6'] }] },
+        options: { responsive:true, plugins:{ legend:{ labels:{ color:'#fff' } } }, maintainAspectRatio:false }
+      });
+
+      const barCtx = document.getElementById('barChart').getContext('2d');
+      barChart = new Chart(barCtx, {
+        type:'bar',
+        data: { labels: barLabels, datasets: [{ label:'Amount (₹)', data: barData, backgroundColor:'#4D96FF' }] },
+        options: { responsive:true, scales:{ x:{ ticks:{ color:'#fff' } }, y:{ ticks:{ color:'#fff' } } }, plugins:{ legend:{ labels:{ color:'#fff' } } }, maintainAspectRatio:false }
+      });
+    }
+
+    // run summary + charts and ensure expense section visible
+    function triggerAllUpdates() {
+      const rows = tableBody.querySelectorAll('tr');
+      expenseSection.style.display = rows.length ? 'block' : 'none';
+      updateSummary();
+      updateCharts();
+    }
+
+    // handle form submit (single handler)
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      const date = document.getElementById('date').value;
+      const desc = document.getElementById('description').value.trim();
+      const amt = document.getElementById('amount').value;
+      const cat = document.getElementById('category').value;
+      const id = document.getElementById('expense_id').value;
+
+// basic validation
+if (!date || !desc || !amt || !cat) return;
+
+popup.style.display = 'block';
+restartProgress();
+
+setTimeout(() => {
+  popup.style.display = 'none';
+
+  if (id) {
+    // Edit mode
+    fetch(`/update_expense/${id}`, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({date, desc, amt, cat})
+    })
+    .then(r => r.json())
+    .then(() => location.reload());
+  } else {
+    // Add mode
+    addRow({date, desc, amt, cat});
+  }
+
+}, 2200);
+ });
+
+form.reset();
+document.getElementById('expense_id').value = '';
+
+    // event delegation for edit/delete on table
+    tableBody.addEventListener('click', function(e){
+      const target = e.target;
+      const tr = target.closest('tr');
+      if (!tr) return;
+
+     if (target.classList.contains('btn-delete')) {
+  const id = tr.dataset.id;
+
+  fetch(`/delete_expense/${id}`, {
+    method: "POST"
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      tr.remove();
+      triggerAllUpdates();
+    } else {
+      alert("Failed to delete expense. Please try again.");
+    }
+  })
+  .catch(() => alert("Error deleting expense."));
+
+
+      } else if (target.classList.contains('btn-edit')) {
+        // fill form with current row values
+        document.getElementById('date').value = tr.children[0].textContent.trim();
+        document.getElementById('description').value = tr.children[1].textContent.trim();
+        document.getElementById('amount').value = tr.children[2].textContent.trim();
+        document.getElementById('category').value = tr.children[3].textContent.trim();
+        tr.remove();
+        triggerAllUpdates();
+        window.scrollTo({ top: document.getElementById('add-expense').offsetTop - 20, behavior:'smooth' });
+      }
+    });
+
+    // initial state
+    triggerAllUpdates();
+
+  })();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html>
+</html> 

@@ -8,6 +8,11 @@ from flask import session
 import json
 from flask import jsonify
 from typing import List
+from flask import jsonify
+from ml.model_utils import prepare_df_for_user, aggregate_monthly_expenses
+from ml.predictor import predict_next_month
+
+
 
 
 
@@ -92,10 +97,9 @@ def login():
     print("GET login page")  # debug
     return render_template("login.html")
 
-    
 @app.route("/dashboard", methods=["GET", "POST"])
 def dashboard():
-        # checking if user is logged in
+
     if "user_id" not in session:
         flash("Please log in first.")
         return redirect(url_for("login"))
@@ -103,33 +107,66 @@ def dashboard():
     conn = get_db()
     cursor = conn.cursor()
     
+    predicted_amount = None
+    monthly_df = None
+
+    # -----------------------------
+    # Add expense only on POST
+    # -----------------------------
     if request.method == "POST":
-        # Get form data for new expense
+
         date = request.form.get("date")
         description = request.form.get("description")
         amount = request.form.get("amount")
         category = request.form.get("category")
-        
-        # Validation: check required fields
+
         if not date or not amount:
             flash("Date and amount are required")
+
         else:
             cursor.execute(
-                "INSERT INTO expenses (user_id, date, description, amount, category) VALUES (?,?,?,?,?)",
-                (session["user_id"], date,description,amount,category)
+                (
+                    "INSERT INTO expenses (user_id, date, description, amount, category) "
+                    "VALUES (?,?,?,?,?)"
+                ),
+                (session["user_id"], date, description, amount, category)
             )
             conn.commit()
             flash("Expense added successfully.")
-            
-            # Fetch all expenses for the logged- in user
+
+            # --------------------------------------
+            # Run ML ONLY when expense successfully added
+            # --------------------------------------
+            from ml.model_utils import prepare_df_for_user, aggregate_monthly_expenses
+            from ml.predictor import predict_next_month
+
+            df = prepare_df_for_user(conn, session["user_id"])
+            monthly_df = aggregate_monthly_expenses(df)
+
+            if not monthly_df.empty:
+                predicted_amount = predict_next_month(monthly_df)
+
+    # -----------------------------
+    # Fetch all expenses ALWAYS
+    # -----------------------------
     cursor.execute(
         "SELECT * FROM expenses WHERE user_id = ? ORDER BY date DESC",
         (session["user_id"],)
     )
     expenses = cursor.fetchall()
+
     conn.close()
-    
-    return render_template("dashboard.html", name=session["user_name"], expenses=expenses)
+
+    return render_template(
+        "dashboard.html",
+        name=session["user_name"],
+        expenses=expenses,
+        predicted_amount=predicted_amount,
+        monthly_df=monthly_df.to_dict(orient="records") if monthly_df is not None else None
+    )
+
+
+
 
 
 @app.route("/logout")
@@ -140,51 +177,58 @@ def logout():
     return redirect(url_for("login"))
 
 
-@app.route('/update_expense/<int:expense_id>', methods=['GET', 'POST'])
+@app.route('/update_expense/<int:expense_id>', methods=['POST'])
 def update_expense(expense_id):
+    if "user_id" not in session:
+        return {"error": "Not logged in"}, 403
+
+    data = request.get_json()
+    if not data:
+        return {"error": "No data received"}, 400
+
+    date = data.get("date")
+    description = data.get("desc")
+    amount = data.get("amt")
+    category = data.get("cat")
+
     conn = get_db()
     cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE expenses SET date=?, description=?, amount=?, category=? WHERE id=? AND user_id=?",
+        (date, description, amount, category, expense_id, session["user_id"])
+    )
+    conn.commit()
+    conn.close()
+
+    return {"success": True}
+
     
-    if request.method == 'POST':
-        description = request.form['description']
-        amount = request.form['amount']
-        category = request.form['category']
-        date = request.form['date']
-        
-        cursor.execute(
-            """
-            UPDATE expenses
-            SET description = ?, amount = ?, category = ?, date = ?
-            WHERE id = ?
-            """,
-            (description, amount, category, date, expense_id)
-        )
-        
+@app.route("/add_expense", methods=["POST"])
+def add_expense():
+        date = request.form["date"]
+        description = request.form["description"]
+        amount = request.form["amount"]
+        category = request.form["category"]
+
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO expenses (user_id, date, description, amount, category)
+            VALUES (1, ?, ?, ?, ?)
+        """, (date, description, amount, category))
         conn.commit()
         conn.close()
-        
-        # after updating, go back to the dashboard
-        return redirect(url_for('dashboard'))
-    
-    else:
-        cursor.execute("SELECT * FROM expenses WHERE id = ?" ,(expense_id,))
-        expense = cursor.fetchone()
-        conn.close()
-        
-        print(dict(expense) if expense else "Expense not found")
-        
-        return "Expense data fetched successfully()"
-    
+
+        return redirect(url_for("dashboard"))
+
 @app.route('/delete_expense/<int:expense_id>', methods=['POST'])
 def delete_expense(expense_id):
     if "user_id" not in session:
-        flash("Please log in first.")
-        return redirect(url_for("login"))
+        return jsonify({"success": False, "error": "not_logged_in"}), 401
     
     conn = get_db()
     cursor = conn.cursor()
-    
-    # deleting only if the expenses belongs to the logged-in user
+
     cursor.execute(
         "DELETE FROM expenses WHERE id = ? AND user_id = ?",
         (expense_id, session["user_id"])
@@ -192,9 +236,8 @@ def delete_expense(expense_id):
     
     conn.commit()
     conn.close()
-    
-    flash("Expense deletd successfully.")
-    return redirect(url_for('dashboard'))
+
+    return jsonify({"success": True})
         
 
 @app.route('/expense_summary')
